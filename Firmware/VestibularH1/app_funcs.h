@@ -38,6 +38,11 @@ void app_read_REG_REG_OPTICAL_TRACKING_READ(void);
 void app_read_REG_PRODUCT_ID_PORT0(void);
 void app_read_REG_PRODUCT_ID_PORT1(void);
 void app_read_REG_CPI(void);
+void app_read_REG_MCA_SIGNAL_SELECT(void);
+void app_read_REG_MCA_SIGNAL_GAIN(void);
+void app_read_REG_MCA_ZERO_THRESHOLD(void);
+void app_read_REG_MCA_MAX_PULSE_INTERVAL(void);
+void app_read_REG_MCA_MIN_PULSE_INTERVAL(void);
 
 bool app_write_REG_CAM0_EVENT(void *a);
 bool app_write_REG_CAM1_EVENT(void *a);
@@ -57,6 +62,11 @@ bool app_write_REG_REG_OPTICAL_TRACKING_READ(void *a);
 bool app_write_REG_PRODUCT_ID_PORT0(void *a);
 bool app_write_REG_PRODUCT_ID_PORT1(void *a);
 bool app_write_REG_CPI(void *a);
+bool app_write_REG_MCA_SIGNAL_SELECT(void *a);
+bool app_write_REG_MCA_SIGNAL_GAIN(void *a);
+bool app_write_REG_MCA_ZERO_THRESHOLD(void *a);
+bool app_write_REG_MCA_MAX_PULSE_INTERVAL(void *a);
+bool app_write_REG_MCA_MIN_PULSE_INTERVAL(void *a);
 
 
 #endif /* _APP_FUNCTIONS_H_ */

@@ -23,6 +23,7 @@ void init_ios(void)
 	io_pin2out(&PORTC, 4, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // FLOW0_CS
 	io_pin2out(&PORTC, 5, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // FLOW0_MOSI
 	io_pin2out(&PORTC, 7, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // FLOW0_SCK
+	io_pin2out(&PORTD, 3, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // TX
 	io_pin2out(&PORTD, 4, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // FLOW1_CS
 	io_pin2out(&PORTD, 5, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // FLOW1_MOSI
 	io_pin2out(&PORTD, 7, OUT_IO_DIGITAL, IN_EN_IO_EN);                  // FLOW1_SCK
@@ -64,6 +65,11 @@ uint8_t app_regs_type[] = {
 	TYPE_I16,
 	TYPE_U8,
 	TYPE_U8,
+	TYPE_U16,
+	TYPE_U8,
+	TYPE_FLOAT,
+	TYPE_FLOAT,
+	TYPE_U16,
 	TYPE_U16
 };
 
@@ -83,6 +89,11 @@ uint16_t app_regs_n_elements[] = {
 	1,
 	1,
 	6,
+	1,
+	1,
+	1,
+	1,
+	1,
 	1,
 	1,
 	1
@@ -106,5 +117,10 @@ uint8_t *app_regs_pointer[] = {
 	(uint8_t*)(app_regs.REG_REG_OPTICAL_TRACKING_READ),
 	(uint8_t*)(&app_regs.REG_PRODUCT_ID_PORT0),
 	(uint8_t*)(&app_regs.REG_PRODUCT_ID_PORT1),
-	(uint8_t*)(&app_regs.REG_CPI)
+	(uint8_t*)(&app_regs.REG_CPI),
+	(uint8_t*)(&app_regs.REG_MCA_SIGNAL_SELECT),
+	(uint8_t*)(&app_regs.REG_MCA_SIGNAL_GAIN),
+	(uint8_t*)(&app_regs.REG_MCA_ZERO_THRESHOLD),
+	(uint8_t*)(&app_regs.REG_MCA_MAX_PULSE_INTERVAL),
+	(uint8_t*)(&app_regs.REG_MCA_MIN_PULSE_INTERVAL)
 };

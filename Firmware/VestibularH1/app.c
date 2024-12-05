@@ -31,7 +31,7 @@ void hwbp_app_initialize(void)
     uint8_t hwH = 1;
     uint8_t hwL = 0;
     uint8_t fwH = 1;
-    uint8_t fwL = 0;
+    uint8_t fwL = 1;
     uint8_t ass = 0;
     
    	/* Start core */
@@ -104,6 +104,15 @@ void core_callback_initialize_hardware(void)
 	
 	/* If PMW3360 is connected to port 1 */
 	//set_cpi_pmw3360_1(12000); // Default it 5000
+	
+	/* Initialize serial with 100 KHz */
+	uint16_t BSEL = 19;
+	int8_t BSCALE = 0;
+		
+	USARTD0_CTRLC = USART_CMODE_ASYNCHRONOUS_gc | USART_PMODE_DISABLED_gc | USART_CHSIZE_8BIT_gc;
+	USARTD0_BAUDCTRLA = *((uint8_t*)&BSEL);
+	USARTD0_BAUDCTRLB = (*(1+(uint8_t*)&BSEL) & 0x0F) | ((BSCALE<<4) & 0xF0);
+	USARTD0_CTRLB = USART_TXEN_bm;
 }
 
 void core_callback_reset_registers(void)
@@ -219,6 +228,9 @@ void core_callback_t_500us(void)
 		if (--pulse_countdown_valve1 == 0)
 			clr_VALVE1;
 }
+
+int16_t motor_pulse_interval;
+
 void core_callback_t_1ms(void)
 {
 	if (++optical_counter == optical_counter_divider)
@@ -240,6 +252,44 @@ void core_callback_t_1ms(void)
 		*(((uint8_t*)(&app_regs.REG_REG_OPTICAL_TRACKING_READ[2]))+1) = 0;	// Clear high byte of [2]
 		*(((uint8_t*)(&app_regs.REG_REG_OPTICAL_TRACKING_READ[5]))+1) = 0;	// Clear high byte of [2]
 				
+		if (app_regs.REG_MCA_SIGNAL_SELECT != MSK_MCA_OFF)
+		{
+			int16_t input;
+			
+			switch (app_regs.REG_MCA_SIGNAL_SELECT)
+			{
+				case MSK_MCA_FLOW0_X: input = app_regs.REG_REG_OPTICAL_TRACKING_READ[0]; break;
+				case MSK_MCA_FLOW0_Y: input = app_regs.REG_REG_OPTICAL_TRACKING_READ[1]; break;
+				case MSK_MCA_FLOW1_X: input = app_regs.REG_REG_OPTICAL_TRACKING_READ[3]; break;
+				case MSK_MCA_FLOW1_Y: input = app_regs.REG_REG_OPTICAL_TRACKING_READ[4]; break;
+				default:              input = app_regs.REG_REG_OPTICAL_TRACKING_READ[0];
+			}
+			
+			bool signal_is_positive = (input >= 0) ? true : false;
+			
+			float signal = input * app_regs.REG_MCA_SIGNAL_GAIN * (signal_is_positive ? 1 : -1);
+						
+			if (signal < app_regs.REG_MCA_ZERO_THRESHOLD)
+			{
+				motor_pulse_interval = 0;
+								
+				USARTD0_DATA = motor_pulse_interval & 0x00FF;
+				timer_type1_enable(&TCD1, TIMER_PRESCALER_DIV64, 50, INT_LEVEL_LOW);	// 100 us
+			}
+			else
+			{
+				motor_pulse_interval = 1000000.0 / signal;
+				
+				if (motor_pulse_interval > app_regs.REG_MCA_MAX_PULSE_INTERVAL) motor_pulse_interval = app_regs.REG_MCA_MAX_PULSE_INTERVAL;
+				if (motor_pulse_interval < app_regs.REG_MCA_MIN_PULSE_INTERVAL) motor_pulse_interval = app_regs.REG_MCA_MIN_PULSE_INTERVAL;
+				
+				motor_pulse_interval = motor_pulse_interval * (signal_is_positive ? 1 : -1);
+				
+				USARTD0_DATA = motor_pulse_interval & 0x00FF;
+				timer_type1_enable(&TCD1, TIMER_PRESCALER_DIV64, 50, INT_LEVEL_LOW);	// 100 us
+			}
+		}
+		
 		core_func_send_event(ADD_REG_REG_OPTICAL_TRACKING_READ, true);
 		
 		optical_counter = 0;

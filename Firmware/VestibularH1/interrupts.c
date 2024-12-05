@@ -155,3 +155,17 @@ ISR(TCD0_CCA_vect, ISR_NAKED)
 	
 	reti();
 }
+
+/************************************************************************/
+/* MOTOR CONTROL ALGORITHM                                              */
+/************************************************************************/
+extern int16_t motor_pulse_interval;
+
+ISR(TCD1_OVF_vect, ISR_NAKED)
+{
+	USARTD0_DATA = (motor_pulse_interval & 0xFF00) >> 8;
+	
+	timer_type1_stop(&TCD1);
+	
+	reti();
+}
